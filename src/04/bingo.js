@@ -83,22 +83,35 @@ function drawWinner(bingoData) {
         })
     })
 
+    const finalDrawings = {}
+    const winners = []
+
     for (const num of bingoData.drawing) {
         const subscribers = numberSubscribers[num] || []
 
-        const winner = subscribers.find(([iBoard, iNumber]) => {
+        subscribers.forEach(([iBoard, iNumber]) => {
+            if (finalDrawings[iBoard]) {
+                return false
+            }
+
             const board = bingoData.boards[iBoard]
             const marks = bingoData.marks.get(board)
             marks[iNumber] = true
 
-            return checkVictor(marks, iNumber)
+            if (checkVictor(marks, iNumber)) {
+                finalDrawings[iBoard] = num
+                winners.push(iBoard)
+            }
         })
 
-        if (winner) {
-            const board = bingoData.boards[winner[0]]
-            return {board, num}
-        }
+        // if (winner) {
+        //     const board = bingoData.boards[winner[0]]
+        //     return {board, num}
+        // }
     }
+
+    const iBoard = winners[winners.length - 1]
+    return {board: bingoData.boards[iBoard], num: finalDrawings[iBoard]}
 
     function checkVictor(marks, iNumber) {
         const x = iNumber % bingoData.boardDimensions.w
