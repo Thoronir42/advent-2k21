@@ -7,11 +7,14 @@ export async function executeTask() {
     const dir = path.dirname(url.fileURLToPath(import.meta.url))
     const file = path.join(dir, 'input.txt')
 
-    const submarine = { depth: 0, distance: 0 }
+    const submarine = { depth: 0, distance: 0, aim: 0 }
     const commands = {
-        forward: (submarine, distance) => submarine.distance += distance,
-        up: (submarine, distance) => submarine.depth -= distance,
-        down: (submarine, distance) => submarine.depth += distance,
+        forward: (submarine, power) => {
+            submarine.distance += power
+            submarine.depth += submarine.aim * power
+        },
+        up: (submarine, d) => submarine.aim -= d,
+        down: (submarine, d) => submarine.aim += d,
     }
 
     const commandProcessor = function (command) {
