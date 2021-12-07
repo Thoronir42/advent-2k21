@@ -2,6 +2,7 @@ import path from "path"
 import url from "url"
 import readline from "readline"
 import fs from "fs"
+import { performance } from "perf_hooks"
 
 /**
  * 
@@ -49,9 +50,22 @@ function getFilePath(input) {
 }
 
 export function runTask(callback) {
+    const start = performance.now()
+    const runContext = {
+        reportPhase: (name) => {
+            const duration = performance.now() - start
+
+            console.log(`[${name}] duration: ${duration.toFixed(3)}ms`);
+        }
+    }
+
     Promise.resolve()
-        .then(() => callback())
+        .then(() => callback.call(runContext))
+        .then(() => {
+            runContext.reportPhase('job')
+        })
         .catch((e) => {
+            runContext.reportPhase('err')
             console.error(e)
             process.exit(1)
         })
