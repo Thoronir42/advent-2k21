@@ -7,3 +7,12 @@ export function findLastIndex(array, predicate) {
 
     return -1
 }
+
+export function through(a, b, onValue) {
+    let d = a - b
+    const s = Math.sign(d)
+    
+    for (let i = a; (i - b) * s >= 0; i -= s) {
+        onValue(i)
+    }
+}
