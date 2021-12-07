@@ -39,8 +39,9 @@ function getFilePath(input) {
     }
 
     if (typeof input === 'object') {
-        if (input.importMeta) {
-            const dir = path.dirname(url.fileURLToPath(input.importMeta.url))
+        const meta = input.importMeta || input.meta
+        if (meta) {
+            const dir = path.dirname(url.fileURLToPath(meta.url))
             return path.join(dir, 'input.txt')
         }
     }
