@@ -1,4 +1,3 @@
-import { through } from "../utils/arrayUtils.js";
 import { runTask, streamLines } from "../utils/ioUtils.js";
 
 runTask(async function () {
@@ -47,7 +46,7 @@ function findOverlaps(lines) {
     }
 
     lines
-        .filter(lineFollowsMainAxis)
+        // .filter(lineFollowsMainAxis)
         .forEach(([p1, p2]) => {
             walkLine(p1, p2, (p) => markPoint(p))
         })
@@ -60,18 +59,16 @@ function lineFollowsMainAxis(line) {
     return line[0].some((pos, dimension) => pos === line[1][dimension])
 }
 function walkLine(p1, p2, onPoint) {
-    const d = p1.map((pos, dim) => pos - p2[dim])
+    const d = p1.map((pos, dim) => p2[dim] - pos)
+    const ds = d.map((dist) => Math.sign(dist))
+    const dist = Math.max(...d.map(Math.abs))
 
-    if (d[0] === 0 && d[1] === 0) {
-        onPoint(p1)
-        return
+    for (let i = 0; i <= dist; i++) {
+        const p = p1.map((pos, dim) => pos + ds[dim] * i)
+        onPoint(p)
     }
 
-    if (d[0] === 0) {
-        through(p1[1], p2[1], (y) => onPoint([p1[0], y]))
-    } else {
-        through(p1[0], p2[0], (x) => onPoint([x, p1[1]]))
-    }
+    return
 }
 
 function countOverlaps(map) {
