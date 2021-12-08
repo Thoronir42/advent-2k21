@@ -6,6 +6,19 @@ import { performance } from "perf_hooks"
 
 /**
  * 
+ * @param {string|object} input 
+ * @returns {number[]}
+ */
+export async function loadLineOfNumbers(input) {
+    let numbers
+    await streamLines(input, (line) => {
+        numbers = line.trim().split(',').map((n) => Number(n.trim()))
+    })
+    return numbers
+}
+
+/**
+ * 
  * @param {string|object} input - absolute path to the file to be parsed
  * @param {function} onLine - callback to process the line
  * 
