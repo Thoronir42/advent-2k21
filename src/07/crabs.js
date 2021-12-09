@@ -26,7 +26,14 @@ function evaluateCrabMoves(crabs) {
 
 function getTotalFuelCost(pos, crabs) {
     const distances = crabs
-        .map((crabPos) => Math.abs(crabPos - pos))
+        .map((crabPos) => crabPos - pos)
+        .map((distance) => getDistanceFuelCost(distance))
+
     return distances
-        .reduce((sum, distance) => sum + distance, 0)
+        .reduce((sum, fuelCost) => sum + fuelCost, 0)
+}
+function getDistanceFuelCost(distance) {
+    // return distance
+    const dAbs = Math.abs(distance)
+    return (1 + dAbs) * dAbs / 2
 }
