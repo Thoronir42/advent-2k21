@@ -1,11 +1,6 @@
 import { runTask, streamLines } from "../utils/ioUtils.js";
+import { cardinalDirections, eachCell, eachNeighbor, getCell, pAdd, setCell } from "../utils/vectorArrayUtils.js";
 
-const directions = {
-    N: [0, -1],
-    E: [1, 0],
-    S: [0, 1],
-    W: [-1, 0],
-}
 
 runTask(async function () {
     const heightMap = await loadHeightMap()
@@ -34,7 +29,7 @@ function mapNeighbors(heightMap) {
     const neighbors = heightMap.map((row) => row.map(() => 0))
     eachCell(heightMap, (p, height) => {
         const dir = getDirectionToLowestNeighbor(heightMap, p)
-        const p1 = pAdd(p, directions[dir])
+        const p1 = pAdd(p, cardinalDirections[dir])
         if (getCell(heightMap, p1) <= height) {
             setCell(dir, neighbors, p)
         }
@@ -88,49 +83,6 @@ function paintBasin(heightMap, basins, iBasin, p) {
     }
 
     return painted
-}
-
-function eachCell(map, onPoint) {
-    for(let y = 0; y < map.length; y++) {
-        const row = map[y]
-        for (let x = 0; x < row.length; x++) {
-            onPoint([x, y], row[x])
-        }
-    }
-}
-function getCell(map, p) {
-    if (!pInMap(map, p)) {
-        return
-    }
-    return map[p[1]][p[0]]
-}
-function setCell(value, map, p) {
-    if (!pInMap(map, p)) {
-        return
-    }
-    map[p[1]][p[0]] = value
-}
-function pInMap(map, p) {
-    if (p[1] < 0 || p[1] >= map.length) {
-        return false
-    }
-    const row = map[p[1]]
-    if (p[0] < 0 || p[0] >= row.length) {
-        return false
-    }
-
-    return true
-}
-function pAdd(p1, p2) {
-    return p1.map((l, i) => l + p2[i])
-}
-function eachNeighbor(map, p, onPoint) {
-    Object.entries(directions).forEach(([dir, d]) => {
-        const p1 = pAdd(p, d)
-        if (pInMap(map, p1)) {
-            onPoint(p1, getCell(map, p1), dir)
-        }
-    })
 }
 
 function getDirectionToLowestNeighbor(map, p) {
