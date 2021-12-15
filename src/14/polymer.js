@@ -3,10 +3,12 @@ import LineParser from "../utils/LineParser.js";
 
 runTask(async function() {
     const {chain, insertionRules} = await loadPolymerization()
-    const ctrl = polyMem
+    // const ctrl = polyMem
+    const ctrl = polyApprox
 
-    const result = ctrl.unfoldPolymer(chain, insertionRules, 10)
+    const result = ctrl.unfoldPolymer(chain, insertionRules, 40)
     const stats = ctrl.analyzePolymer(result)
+
     console.log(stats.extremes.top[1]  - stats.extremes.low[1]);
 })
 
@@ -60,6 +62,64 @@ const polyMem = {
         }
     
         const countEntries = Object.entries(counts)
+        countEntries.sort((a, b) => b[1] - a[1])
+        const top = countEntries[0]
+        const low = countEntries[countEntries.length - 1]
+    
+        return {
+            countsOrdered: countEntries,
+            extremes: {top, low},
+        }
+    }
+}
+
+const polyApprox = {
+    unfoldPolymer(chain, insertionRules, steps) {
+        let result = this._findPairs(chain)
+        for (let i = 1; i <= steps; i++) {
+            result = this._unfoldPolymerStep(result, insertionRules)
+        }
+        return result
+    },
+    _findPairs(chain) {
+        const pairs = {}
+        pairs[' ' + chain.charAt(0)] = 1
+        for(let i = 0; i < chain.length - 1; i++) {
+            const pair = chain.substr(i, 2)
+            pairs[pair] = (pairs[pair] ?? 0) + 1
+        }
+        pairs[chain.charAt(chain.length - 1) + ' '] = 1
+        return pairs
+    },
+    _unfoldPolymerStep(pairs, insertionRules) {
+        const newPairs = {}
+        Object.entries(pairs).forEach(([pair, count]) => {
+            const insertion = insertionRules[pair]
+            if (!insertion) {
+                newPairs[pair] = count
+                return
+            }
+
+            const addPairs = [pair.substring(0, 1) + insertion, insertion + pair.substring(1)]
+            addPairs.forEach((addPair) => {
+                newPairs[addPair] = (newPairs[addPair] ?? 0) + count
+            })
+        })
+    
+        return newPairs
+    },
+
+    analyzePolymer(pairs) {
+        const counts = {}
+        Object.entries(pairs).forEach(([pair, count]) => {
+            [...pair].forEach((c) => {
+                counts[c] = (counts[c] ?? 0) + count
+            })
+        })
+        delete counts[' ']
+
+    
+        const countEntries = Object.entries(counts).map(([c, count]) => [c, count / 2])
         countEntries.sort((a, b) => b[1] - a[1])
         const top = countEntries[0]
         const low = countEntries[countEntries.length - 1]
