@@ -1,8 +1,12 @@
 import { runTask, streamLines } from "../utils/ioUtils.js";
-import { eachNeighbor, getCell, setCell } from "../utils/vectorArrayUtils.js";
+import { createMap, eachCell, eachNeighbor, getCell, setCell } from "../utils/vectorArrayUtils.js";
 
 runTask(async function() {
-    const riskMap = await loadRiskMap()
+    let riskMap = await loadRiskMap()
+    riskMap = expandMap(riskMap, 5)
+
+    // console.log(riskMap.map((row) => row.join('')).join('\n'));
+    // return
     const totalRiskMap = evaluateRisk(riskMap)
     // console.log(totalRiskMap.map((row) => row.join('\t')).join('\n'));
 
@@ -17,6 +21,25 @@ async function loadRiskMap() {
         map.push([...line].map((p) => Number(p)))
     })
     return map
+}
+function expandMap(map, times) {
+    const mapDimensions = [map.length, map[0].length]
+    const chunks = createMap([times, times], (chunkCoords) => createMap(mapDimensions, (coords) => {
+        const risk = getCell(map, coords)
+        const newValue = (risk + chunkCoords[0] + chunkCoords[1] - 1) % 9 + 1
+        return newValue
+    }))
+
+    
+    const newMap = createMap(mapDimensions.map((size) => (size * times)), (coords) => {
+        const chunkCoords = coords.map((offset, iDim) => Math.floor(offset / mapDimensions[iDim]))
+        const subCoords = coords.map((offset, iDim) => offset % mapDimensions[iDim])
+
+        const chunk = getCell(chunks, chunkCoords)
+        return getCell(chunk, subCoords)
+    })
+
+    return newMap
 }
 
 function evaluateRisk(riskMap) {

@@ -48,6 +48,17 @@ export function pInMap(map, p) {
     return true
 }
 
+export function createMap(dimensions, createEl) {
+    return Array.from({length: dimensions[1]})
+        .map((r, y) => {
+            const row = Array.from({length: dimensions[0]})
+            if (!createEl) {
+                return row
+            }
+            return row.map((c, x) => createEl([y, x]))
+        })
+}
+
 export function eachNeighbor(map, p, onPoint) {
     Object.entries(cardinalDirections).forEach(([dir, d]) => {
         const p1 = pAdd(p, d)
