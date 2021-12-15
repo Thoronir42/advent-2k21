@@ -1,0 +1,2 @@
+mem step 1>
+{ NC: 1, CN: 1, NB: 1, BC: 1, CH: 1, HB: 1 }
