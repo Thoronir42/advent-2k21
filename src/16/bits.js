@@ -10,7 +10,10 @@ runTask(async function() {
 
     const rest = (await consumer.readToEnd()).toString()
     console.log(rest);
-    console.log(sumPacketVersions(packet));
+    return {
+        versionSum: sumPacketVersions(packet),
+        packetValue: evaluatePacketValue(packet),
+    }
 })
 
 function createBitStream() {
@@ -50,22 +53,22 @@ async function loadLiteralValue(consumer) {
 const packetLenTypePopulators = {
     0: async function populateOperatorPacketSubLength(consumer, packet) {
         packet.len = await consumer.readInt(15)
-        packet.packets = []
+        packet.val = []
 
         let start = consumer.position
         let readLength = start
 
         while (readLength - start < packet.len) {
-            packet.packets.push(await loadPacket(consumer))
+            packet.val.push(await loadPacket(consumer))
             readLength = consumer.position
         }
     },
     1: async function populateOperatorPacketSubCount(consumer, packet) {
         packet.len = await consumer.readInt(11)
-        packet.packets = []
+        packet.val = []
 
         for (let i = 0; i < packet.len; i++) {
-            packet.packets.push(await loadPacket(consumer))
+            packet.val.push(await loadPacket(consumer))
         }
     },
 }
@@ -81,9 +84,23 @@ function sumPacketVersions(packet) {
     while (toSum.length) {
         const currPacket = toSum.shift()
         sum += currPacket.ver
-        if (currPacket.packets) {
-            toSum.push(...currPacket.packets)
+        if (currPacket.typ !== 4) {
+            toSum.push(...currPacket.val)
         }
     }
     return sum
+}
+
+const getValueByType = {
+    0: ({val}) => val.reduce((sum, packet) => sum + evaluatePacketValue(packet), 0),
+    1: ({val}) => val.reduce((sum, packet) => sum * evaluatePacketValue(packet), 1),
+    2: ({val}) => Math.min(...val.map((packet) => evaluatePacketValue(packet))),
+    3: ({val}) => Math.max(...val.map((packet) => evaluatePacketValue(packet))),
+    4: ({val}) => val,
+    5: ({val}) => evaluatePacketValue(val[0]) > evaluatePacketValue(val[1]) ? 1 : 0,
+    6: ({val}) => evaluatePacketValue(val[0]) < evaluatePacketValue(val[1]) ? 1 : 0,
+    7: ({val}) => evaluatePacketValue(val[0]) === evaluatePacketValue(val[1]) ? 1 : 0,
+}
+function evaluatePacketValue(packet) {
+    return getValueByType[packet.typ](packet)
 }

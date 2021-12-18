@@ -75,8 +75,11 @@ export function runTask(callback) {
 
     Promise.resolve()
         .then(() => callback.call(runContext))
-        .then(() => {
+        .then((result) => {
             runContext.reportPhase('job')
+            if (result !== undefined) {
+                console.log('job result: ', result)
+            }
         })
         .catch((e) => {
             runContext.reportPhase('err')
