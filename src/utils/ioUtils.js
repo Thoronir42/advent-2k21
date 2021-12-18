@@ -46,7 +46,7 @@ export async function streamLines(input, onLine) {
     return parseContext
 }
 
-function getFilePath(input) {
+export function getFilePath(input) {
     if (process.argv[2]) {
         return path.resolve(process.cwd(), process.argv[2])
     }
