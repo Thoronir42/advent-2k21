@@ -47,15 +47,15 @@ export async function streamLines(input, onLine) {
 }
 
 export function getFilePath(input) {
-    if (process.argv[2]) {
-        return path.resolve(process.cwd(), process.argv[2])
-    }
-
     if (typeof input === 'object') {
         const meta = input.importMeta || input.meta
         if (meta) {
+            if (!input.file && process.argv[2]) {
+                return path.resolve(process.cwd(), process.argv[2])
+            }
+
             const dir = path.dirname(url.fileURLToPath(meta.url))
-            return path.join(dir, 'input.txt')
+            return path.join(dir, input.file || 'input.txt')
         }
     }
 

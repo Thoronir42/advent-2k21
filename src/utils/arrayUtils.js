@@ -16,3 +16,12 @@ export function through(a, b, onValue) {
         onValue(i)
     }
 }
+
+through.gen = function* through(a, b) {
+    let d = a - b
+    const s = Math.sign(d)
+    
+    for (let i = a; (i - b) * s >= 0; i -= s) {
+        yield i
+    }
+}
